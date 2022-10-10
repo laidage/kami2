@@ -11,14 +11,15 @@ class Env:
         with open(file, 'r') as f:
             lines = f.readlines()
             self.colors = int(lines[0])
+            self.min_steps = int(lines[1])
             self.rest_of_colors = [i for i in range(0, self.colors)]
             # color_rgbs = []
             for i in range(self.colors):
-                self.color_rgbs.append(eval(lines[i+1]))
-            for line in lines[self.colors+1:]:
+                self.color_rgbs.append(eval(lines[i+2]))
+            for line in lines[self.colors+2:]:
                 self.state.append(eval(line))
         # return self.tran_state(), self.colors
-        return self.state, self.colors, self.color_rgbs
+        return self.state, self.min_steps, self.colors, self.color_rgbs
 
     def __init__(self):
         self.colors = 0
@@ -39,7 +40,7 @@ class Env:
             self.colors = copy.deepcopy(self.init_colors)
             self.rest_of_colors = copy.deepcopy(self.init_rest_of_colors)
             self.color_rgbs = copy.deepcopy(self.init_color_rgbs)
-        return self.state, self.colors, self.color_rgbs
+        return self.state, self.min_steps, self.colors, self.color_rgbs
 
         
 
@@ -151,7 +152,10 @@ class Env:
         
         done, reward = self.game_over()
         # return self.tran_state(), reward, done
-        return change_triangles, reward, done
+        # return change_triangles, reward, done
+        if not change_triangles:
+            reward = 0
+        return self.state, reward, done
 
     def step(self, action):
         color = action // 290
