@@ -46,7 +46,7 @@ class MainWindow(QMainWindow):
         self.env = Env()
         # self.step_button = QPushButton("", self.label)
         
-        self.triangle_colors, self.min_steps, self.colors, self.color_rgbs = self.env.init_game(1)
+        self.triangle_colors, self.min_steps, self.colors, self.color_rgbs = self.env.init_game(12)
         self.current_step = self.min_steps
         self.qcolors = [QColor(*rgb) for rgb in self.color_rgbs]
         self.current_color_index = 0
@@ -173,8 +173,12 @@ class MainWindow(QMainWindow):
         pass
 
     def refresh(self):
-        print("refresh")
-        pass
+        self.triangle_colors, self.min_steps, self.colors, self.color_rgbs = self.env.init_game(12)
+        self.current_step = self.min_steps
+        self.current_color_index = 0
+        self.step_button.setText(str(self.current_step))
+        self.draw_triangles(self.triangles)
+        
 
     def tip(self):
         print("tip")
