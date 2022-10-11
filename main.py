@@ -29,6 +29,9 @@ class Controller:
     def show_game(self):
         pass
 
+    def show_hidden(self):
+        pass
+
 
 if __name__ == "__main__":
     app = QApplication([])
