@@ -30,7 +30,7 @@ def bind(objectName, propertyName):
 
     return property(getter, setter)
 
-class MainWindow(QMainWindow):
+class Game(QMainWindow):
     # current_step = bind("step_button", "text")
 
     def __init__(self):
@@ -64,7 +64,7 @@ class MainWindow(QMainWindow):
         pos = QMouseEvent.pos()
         x, y = whichTriangle(pos.x(), pos.y(), self.triangles)
         color_index = self.current_color_index
-        self.triangle_colors, reward, _ = self.env.change_color(x, y, color_index)
+        self.triangle_colors, reward, done = self.env.change_color(x, y, color_index)
         if reward == 0:
             return 
         self.current_step -= 1
@@ -75,6 +75,7 @@ class MainWindow(QMainWindow):
         #     return
         # self.draw_one_color(xy_indexs, color)
         self.draw_triangles(self.triangles)
+        
         
     def draw_one_color(self, triangles_index, color):
         canvas = self.label.pixmap()
@@ -213,11 +214,11 @@ class MainWindow(QMainWindow):
         painter.end()
         self.label.setPixmap(canvas)
 
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    # app.setWindowIcon(QIcon(os.path.join(basedir, "assets", "app_icon.ico")))
+    app.setWindowIcon(QIcon("./assets/app_icon.ico"))
+    window = Game()
+    window.show()
 
-app = QApplication(sys.argv)
-# app.setWindowIcon(QIcon(os.path.join(basedir, "assets", "app_icon.ico")))
-app.setWindowIcon(QIcon("./assets/app_icon.ico"))
-window = MainWindow()
-window.show()
-
-app.exec_()
+    app.exec_()

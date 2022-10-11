@@ -3,6 +3,8 @@ from PySide6.QtCore import QSize, Qt, QPoint, QObject
 from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel
 from PySide6.QtGui import QIcon, QPixmap, QPainter, QPolygon, QColor, QBrush, QPen
 
+from choose_level import Level
+
 SCREEN_WIDTH = 360
 SCREEN_HEIGHT = 640
 
@@ -30,6 +32,7 @@ class Index(QMainWindow):
         self.travel_button = QPushButton("", self.label)
         self.hidden_button = QPushButton("", self.label)
         self.styled_buttons()
+        self.travel_button.clicked.connect(self.open_travel)
 
     def styled_buttons(self):
         width = 200
@@ -45,6 +48,11 @@ class Index(QMainWindow):
         self.hidden_button.setIconSize(QSize(200, 200))
         self.travel_button.setStyleSheet("background-color: rgba(0, 0, 0, 0%);")
         self.hidden_button.setStyleSheet("background-color: rgba(0, 0, 0, 0%);")
+
+    def open_travel(self):
+        window = Level()
+        window.show()
+        self.close()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
