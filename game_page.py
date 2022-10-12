@@ -3,7 +3,7 @@ import sys, os
 from utils import get_triangles, whichTriangle
 
 from PySide6.QtCore import QSize, Qt, QPoint, QObject, Signal
-from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel
+from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QFrame
 from PySide6.QtGui import QIcon, QPixmap, QPainter, QPolygon, QColor, QBrush, QPen, QPalette
 from game_logic2 import Env
 import functools 
@@ -30,21 +30,19 @@ def bind(objectName, propertyName):
 
     return property(getter, setter)
 
-class Game(QMainWindow):
+class Game(QLabel):
     # current_step = bind("step_button", "text")
     redirect_travel = Signal(int)
     def __init__(self, lv=1):
         super().__init__()
         self.lv = lv
         self.setWindowTitle("kami2")
-        self.label = QLabel()
         # canvas = QPixmap(400, 300)
         canvas = QPixmap(SCREEN_WIDTH,SCREEN_HEIGHT)
         # canvas.fill(Qt.green)
-        self.label.setPixmap(canvas)
-        self.setCentralWidget(self.label)
+        self.setPixmap(canvas)
         self.env = Env()
-        # self.step_button = QPushButton("", self.label)
+        # self.step_button = QPushButton("", self)
         
         self.triangle_colors, self.min_steps, self.colors, self.color_rgbs = self.env.init_game(self.lv)
         self.current_step = self.min_steps
@@ -54,7 +52,7 @@ class Game(QMainWindow):
         self.draw_triangles(self.triangles)
         self.draw_handle_buttons()
         self.draw_color_buttons()
-        self.label.mousePressEvent = self.pressEvent
+        self.mousePressEvent = self.pressEvent
         # self.setMenuWidget(button2)
 
         # Set the central widget of the Window.
@@ -69,16 +67,13 @@ class Game(QMainWindow):
             return 
         self.current_step -= 1
         self.step_button.setText(str(self.current_step))
-        # print(xy_indexs)
-        # color = self.qcolors[color_index]
-        # if not xy_indexs:
-        #     return
-        # self.draw_one_color(xy_indexs, color)
         self.draw_triangles(self.triangles)
+        if done:
+            self.back()
         
         
     def draw_one_color(self, triangles_index, color):
-        canvas = self.label.pixmap()
+        canvas = self.pixmap()
         painter = QPainter(canvas)
         for xy_index in triangles_index:
             x, y = xy_index
@@ -102,10 +97,10 @@ class Game(QMainWindow):
             painter.setRenderHint(QPainter.Antialiasing, True)
             painter.drawPolygon(points,Qt.WindingFill)
         painter.end()
-        self.label.setPixmap(canvas)
+        self.setPixmap(canvas)
 
     def draw_triangles(self, triangles):
-        canvas = self.label.pixmap()
+        canvas = self.pixmap()
         painter = QPainter(canvas)
         # painter.setRenderHint(QPainter.LosslessImageRendering, True)
         for i, column in enumerate(triangles):
@@ -129,7 +124,7 @@ class Game(QMainWindow):
                 painter.setRenderHint(QPainter.Antialiasing, True)
                 painter.drawPolygon(points,Qt.WindingFill)
         painter.end()
-        self.label.setPixmap(canvas)
+        self.setPixmap(canvas)
 
     def selectColor(self, index):
         self.current_color_index = index
@@ -142,7 +137,7 @@ class Game(QMainWindow):
         for i in range(4):
             x = i * width
             y = 82 * 14 // 2
-            button = QPushButton("", self.label)
+            button = QPushButton("", self)
             button.setStyleSheet("border: 0; background-color: #241b0d;")
             button.setIcon(QIcon(icons[i]))
             button.setIconSize(QSize(60, 60))
@@ -156,13 +151,13 @@ class Game(QMainWindow):
     
     def draw_color_buttons(self):
         # 画颜色按钮，并添加监听器
-        # canvas = self.label.pixmap()
+        # canvas = self.pixmap()
         width = (SCREEN_WIDTH - 144) // self.colors
         height = SCREEN_HEIGHT - 82 * 14 // 2
         for i in range(self.colors):
             x = 144 + i * width
             y = 82 * 14 // 2
-            button = QPushButton("", self.label)
+            button = QPushButton("", self)
             # print(str(self.color_rgbs[i]))
             # print("background-color: " + str(self.color_rgbs[i])+";")
             button.setStyleSheet("border: 0; background-color: rgb" + str(self.color_rgbs[i])+"; border-top: 1px dotted #241b0d;")
@@ -189,7 +184,7 @@ class Game(QMainWindow):
         xy_indexs, _, _ = self.env.change_color(x, y, color)
         if not xy_indexs:
             return
-        canvas = self.label.pixmap()
+        canvas = self.pixmap()
         painter = QPainter(canvas)
         for xy_index in xy_indexs:
             x, y = xy_index
@@ -211,7 +206,7 @@ class Game(QMainWindow):
             painter.setRenderHint(QPainter.Antialiasing, True)
             painter.drawPolygon(points,Qt.WindingFill)
         painter.end()
-        self.label.setPixmap(canvas)
+        self.setPixmap(canvas)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

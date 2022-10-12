@@ -14,7 +14,7 @@ try:
 except ImportError:
     pass
 
-class Level(QMainWindow):
+class Level(QLabel):
     # current_step = bind("step_button", "text")
     
     redirect_home = Signal(int)
@@ -23,22 +23,20 @@ class Level(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("kami2")
-        self.label = QLabel()
         background = QPixmap().fromImage("./assets/background.png").scaled(SCREEN_WIDTH,SCREEN_HEIGHT)
         # canvas.fill(Qt.green)
-        self.label.setPixmap(background)
-        self.label.setBaseSize(SCREEN_WIDTH,SCREEN_HEIGHT)
-        self.setCentralWidget(self.label)
+        self.setPixmap(background)
+        self.setBaseSize(SCREEN_WIDTH,SCREEN_HEIGHT)
 
-        self.home_button = QPushButton("", self.label)
-        self.left_button = QPushButton("", self.label)
-        self.right_button = QPushButton("", self.label)
-        self.current_page_button = QPushButton("", self.label)
+        self.home_button = QPushButton("", self)
+        self.left_button = QPushButton("", self)
+        self.right_button = QPushButton("", self)
+        self.current_page_button = QPushButton("", self)
         self.styled_button()
         self.count_level = 42
         self.current_page = 1
-        self.current_level_imgs = [QPushButton("", self.label) for _ in range(6)]
-        self.current_levels = [QPushButton("", self.label) for _ in range(6)]
+        self.current_level_imgs = [QPushButton("", self) for _ in range(6)]
+        self.current_levels = [QPushButton("", self) for _ in range(6)]
         self.current_level_nums = [QLabel("", self.current_levels[i]) for i in range(6)]
         self.styled_level()
         self.bind_level()

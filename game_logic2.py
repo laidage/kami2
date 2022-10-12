@@ -1,6 +1,7 @@
 import random
 from collections import deque
 import copy
+from re import I
 
 
 from torch import randint
@@ -85,16 +86,21 @@ class Env:
         # return self.tran_state(), self.colors
         return self.state, self.colors
 
-    
-
-    
-
     def game_over(self):
         reward = -1
-        for color in self.rest_of_colors:
+        for color in range(self.colors):
             if not any(color in column for column in self.state):
-                self.rest_of_colors.remove(color)
-                reward = 3
+                if color in self.rest_of_colors:
+                    self.rest_of_colors.remove(color)
+                    reward = 3
+            else:
+                if color not in self.rest_of_colors:
+                    index = len(self.rest_of_colors)
+                    for i in range(len(self.rest_of_colors)):
+                        if self.rest_of_colors[i] > color:
+                            index = i 
+                            break
+                    self.rest_of_colors.insert(index, color)
         if len(self.rest_of_colors) == 1:
             return True, 10
         return False, reward
