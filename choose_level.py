@@ -1,7 +1,8 @@
 import sys
-from PySide6.QtCore import QSize, Qt, QPoint, QObject
+from PySide6.QtCore import QSize, Qt, QPoint, QObject, Signal
 from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel
 from PySide6.QtGui import QIcon, QPixmap, QPainter, QPolygon, QColor, QBrush, QPen
+import functools
 
 SCREEN_WIDTH = 360
 SCREEN_HEIGHT = 640
@@ -15,7 +16,9 @@ except ImportError:
 
 class Level(QMainWindow):
     # current_step = bind("step_button", "text")
-
+    
+    redirect_home = Signal(int)
+    redirect_game = Signal(int)
     def __init__(self, type="旅程"):
         super().__init__()
 
@@ -61,6 +64,7 @@ class Level(QMainWindow):
         self.right_button.setIconSize(QSize(30, 30))
         self.left_button.setStyleSheet("background-color: rgba(0, 0, 0, 0%);")
         self.right_button.setStyleSheet("background-color: rgba(0, 0, 0, 0%);")
+        self.home_button.clicked.connect(self.return_home)
         self.left_button.clicked.connect(self.left)
         self.right_button.clicked.connect(self.right)
 
@@ -91,12 +95,17 @@ class Level(QMainWindow):
             #     self.current_level[i].setIcon(QIcon("./assets/ok.png"))
             self.current_levels[i].setIcon(QIcon("./assets/level.png"))
             self.current_level_nums[i].setText(str(lv))
+            self.current_level_imgs[i].clicked.connect(functools.partial(self.open_game, lv))
+            self.current_levels[i].clicked.connect(functools.partial(self.open_game, lv))
 
             # self.current_level[i].setStyleSheet("background: url('./assets/level.png'); background-position: center; "
             # + "background-size: 100 100;")
 
     def return_home(self):
-        self.close()
+        self.redirect_home.emit(1)
+
+    def open_game(self, lv=1):
+        self.redirect_game.emit(lv)
 
     def left(self):
         if self.current_page <= 1:

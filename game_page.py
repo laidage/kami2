@@ -2,7 +2,7 @@ import random
 import sys, os
 from utils import get_triangles, whichTriangle
 
-from PySide6.QtCore import QSize, Qt, QPoint, QObject
+from PySide6.QtCore import QSize, Qt, QPoint, QObject, Signal
 from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel
 from PySide6.QtGui import QIcon, QPixmap, QPainter, QPolygon, QColor, QBrush, QPen, QPalette
 from game_logic2 import Env
@@ -32,10 +32,10 @@ def bind(objectName, propertyName):
 
 class Game(QMainWindow):
     # current_step = bind("step_button", "text")
-
-    def __init__(self):
+    redirect_travel = Signal(int)
+    def __init__(self, lv=1):
         super().__init__()
-
+        self.lv = lv
         self.setWindowTitle("kami2")
         self.label = QLabel()
         # canvas = QPixmap(400, 300)
@@ -46,7 +46,7 @@ class Game(QMainWindow):
         self.env = Env()
         # self.step_button = QPushButton("", self.label)
         
-        self.triangle_colors, self.min_steps, self.colors, self.color_rgbs = self.env.init_game(12)
+        self.triangle_colors, self.min_steps, self.colors, self.color_rgbs = self.env.init_game(self.lv)
         self.current_step = self.min_steps
         self.qcolors = [QColor(*rgb) for rgb in self.color_rgbs]
         self.current_color_index = 0
@@ -170,11 +170,10 @@ class Game(QMainWindow):
             button.clicked.connect(functools.partial(self.selectColor, i))
 
     def back(self):
-        print("back")
-        pass
+        self.redirect_travel.emit(1)
 
     def refresh(self):
-        self.triangle_colors, self.min_steps, self.colors, self.color_rgbs = self.env.init_game(12)
+        self.triangle_colors, self.min_steps, self.colors, self.color_rgbs = self.env.init_game(self.lv)
         self.current_step = self.min_steps
         self.current_color_index = 0
         self.step_button.setText(str(self.current_step))

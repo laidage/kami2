@@ -1,5 +1,5 @@
 import sys
-from PySide6.QtCore import QSize, Qt, QPoint, QObject
+from PySide6.QtCore import QSize, Qt, QPoint, QObject, Signal
 from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel
 from PySide6.QtGui import QIcon, QPixmap, QPainter, QPolygon, QColor, QBrush, QPen
 
@@ -18,6 +18,9 @@ except ImportError:
 class Index(QMainWindow):
     # current_step = bind("step_button", "text")
 
+    redirect_travel = Signal(int)
+    redirect_hidden = Signal(int)
+
     def __init__(self):
         super().__init__()
 
@@ -33,6 +36,7 @@ class Index(QMainWindow):
         self.hidden_button = QPushButton("", self.label)
         self.styled_buttons()
         self.travel_button.clicked.connect(self.open_travel)
+        self.hidden_button.clicked.connect(self.open_hidden)
 
     def styled_buttons(self):
         width = 200
@@ -50,9 +54,10 @@ class Index(QMainWindow):
         self.hidden_button.setStyleSheet("background-color: rgba(0, 0, 0, 0%);")
 
     def open_travel(self):
-        window = Level()
-        window.show()
-        self.close()
+        self.redirect_travel.emit(1)
+
+    def open_hidden(self):
+        self.redirect_hidden.emit(1)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
