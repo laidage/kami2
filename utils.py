@@ -39,3 +39,17 @@ def whichTriangle(x, y, triangles):
         for j in range(len(triangles[index])):
             if point_in_triangle((x,y), triangles[index][j]):
                 return index, j
+
+def get_rectangles():
+    rectangles = []
+    for i in range(116):
+        row = []
+        x = i * 5
+        for j in range(72):
+            y = j * 5
+            row.append((x, y))
+        rectangles.append(row)
+    return rectangles
+
+def which_rectangle(x, y):
+    return y // 5, x // 5
