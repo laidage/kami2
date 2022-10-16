@@ -1,46 +1,68 @@
 import logging
 logging.basicConfig(filename='test_model.log', level=logging.INFO)
-from train import Net 
+from net import Net 
 import torch
 import os
-from game_logic import Env
+from game_logic2 import Env
 from itertools import count
 import time
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+torch.set_default_dtype(torch.float16)
 # , map_location='cpu'
 policy_net = Net().to(device)
-if os.path.exists("model/net.pth"):
-    policy_net.load_state_dict(torch.load("model/net.pth"))
+if os.path.exists("model/half_net.pth"):
+    before = time.time()
+    policy_net.load_state_dict(torch.load("model/half_net.pth"))
+    after = time.time()
+    print(after -before)
 
 def choose_action(state, env):
     with torch.no_grad():
-            # print(policy_net(state))
-            # # print(policy_net(state).view(1500,1)[183])
-            return policy_net(state).max(1)[1].view(1, 1)
-        # sorted, indices = torch.sort(policy_net(state), descending=True)
-        # # # print(sorted[0], indices)
-        # i = 0
-        # while not env.valid(indices[0][i].view(1, 1).item()):
-        #     i += 1
-        # return indices[0][i].view(1, 1)
+        before = time.time()
+        action =  policy_net(state).max(1)[1].view(1, 1)
+        after = time.time()
+        print(after -before)
+        return action
 
+def tran_state(state, color_nums):
+        trans_state = []
+        for color_index in range(5):
+            if color_index >= color_nums:
+                trans_state.append([[-1 for _ in range(15)] for _ in range(20)])
+                continue
+            types = []
+            for column_index in range(20):
+                column = [0 for _ in range(15)]
+                if column_index % 4 == 1 or column_index % 4 == 2: 
+                    column[14] = -1
+                types.append(column)
+            trans_state.append(types)
+        for i in range(20):
+            for j in range(len(state[i])):
+                color = state[i][j]
+                trans_state[color][i][j] = 1
+        return trans_state
+                
 
 def test():
     env = Env()
     steps = []
     true_steps = []
     for i in range(1,43):
-        state, _ = env.load_config_file("config/" + str(i))
-        state = torch.tensor(state, dtype=torch.float64).unsqueeze(0)
+        state, _, color_nums, _ = env.load_config_file("config/" + str(i))
+        state = tran_state(state, color_nums)
+        state = torch.tensor(state, dtype=torch.half).unsqueeze(0)
         for t in count():
             # print(t)
             action = choose_action(state, env)
+            if i == 36 and t == 0:
+                print(action)
             # print(action)
-            state_, reward, done = env.step(action.item())
+            state_, _, done = env.step(action.item())
             # print(reward)
-            
-            state_ = torch.tensor(state_, dtype=torch.float64).unsqueeze(0)
+            state_ = tran_state(state_, color_nums)
+            state_ = torch.tensor(state_, dtype=torch.half).unsqueeze(0)
             state = state_
             # if t >= 2:
             #     time.sleep(10000)

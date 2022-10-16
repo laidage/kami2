@@ -1,7 +1,7 @@
 import sys
 from PySide6.QtCore import QSize, Qt, QPoint, QObject, Signal
 from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel
-from PySide6.QtGui import QIcon, QPixmap, QPainter, QPolygon, QColor, QBrush, QPen
+from PySide6.QtGui import QIcon, QPixmap, QPainter, QPolygon, QColor, QBrush, QPen, QImage
 
 from choose_level import Level
 
@@ -25,7 +25,7 @@ class Index(QLabel):
         super().__init__()
 
         self.setWindowTitle("kami2")
-        background = QPixmap().fromImage("./assets/background.png").scaled(SCREEN_WIDTH,SCREEN_HEIGHT)
+        background = QPixmap().fromImage(QImage("./assets/background.png")).scaled(SCREEN_WIDTH,SCREEN_HEIGHT)
         # canvas.fill(Qt.green)
         self.setPixmap(background)
         self.setBaseSize(SCREEN_WIDTH,SCREEN_HEIGHT)

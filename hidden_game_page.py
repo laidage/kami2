@@ -80,7 +80,7 @@ class HGame(QLabel):
                 pen.setWidth(0)
                 pen.setColor(color)
                 painter.setPen(pen)
-                painter.setRenderHint(QPainter.Antialiasing, True)
+                painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
                 x = j * 5
                 painter.drawRect(x, y, width, height)
         painter.end()
@@ -146,7 +146,9 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     # app.setWindowIcon(QIcon(os.path.join(basedir, "assets", "app_icon.ico")))
     app.setWindowIcon(QIcon("./assets/app_icon.ico"))
-    window = HGame(5)
-    window.show()
+    gameLabel = HGame(3)
+    mainWindow = QMainWindow()
+    mainWindow.setCentralWidget(gameLabel)
+    mainWindow.show()
 
     app.exec_()

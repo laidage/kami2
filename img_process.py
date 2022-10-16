@@ -7,6 +7,7 @@
 from PIL import Image
 import os
 from closed_color import min_color_diff
+from collections import Counter
 
 def get_img_rgb(file_path):
     im = Image.open(file_path)
@@ -32,17 +33,36 @@ def make_hidden_config(config_file, img_file):
         for i in range(color_nums):
             f.write(str(color_rgbs[i]) + '\n')
 
+        # for i in range(116):
+        #     y = 5 + i * 10
+        #     row = []
+        #     for j in range(72):
+        #         x = 5 + j * 10
+        #         color = pixes[x, y]
+        #         row.append(min_color_diff(color, color_rgbs)[1])
+        #     if i == 115:
+        #         f.write(str(row))
+        #     else: 
+        #         f.write(str(row) + '\n')
+
         for i in range(116):
-            y = 5 + i * 10
             row = []
             for j in range(72):
-                x = 5 + j * 10
-                color = pixes[x, y]
-                row.append(min_color_diff(color, color_rgbs)[1])
+                colors = []
+                for m in range(10):
+                    y = m + i * 10
+                    for n in range(10):
+                        x = n + j * 10
+                        color = pixes[x, y]
+                        colors.append(min_color_diff(color, color_rgbs)[1])
+                color_count = Counter(colors)
+                cc = color_count.most_common(1)[0][0]
+                row.append(cc)
             if i == 115:
                 f.write(str(row))
-            else:
+            else: 
                 f.write(str(row) + '\n')
 
 if __name__ == '__main__':
-    make_hidden_config('1', '1.png')
+    for i in range(1, 6):
+        make_hidden_config(str(i), str(i) + '.png')

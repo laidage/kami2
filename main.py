@@ -1,11 +1,12 @@
+from hidden_level import HLevel
+from hidden_game_page import HGame
 import sys
-from PySide6.QtCore import QSize, Qt, QPoint, QObject
-from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QStackedWidget
-from PySide6.QtGui import QIcon, QPixmap, QPainter, QPolygon, QColor, QBrush, QPen
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QApplication, QMainWindow, QStackedWidget
+from PySide6.QtGui import QIcon
 from game_page import Game
 from choose_level import Level
 from index import Index
-import functools
 
 SCREEN_WIDTH = 360
 SCREEN_HEIGHT = 640
@@ -28,6 +29,10 @@ class MainWindow(QMainWindow):
             self.stackedWidget.removeWidget(self.travel)
             self.travel.close()
             delattr(self, "travel")
+        if hasattr(self, "hidden"):
+            self.stackedWidget.removeWidget(self.hidden)
+            self.hidden.close()
+            delattr(self, "hidden")
         self.stackedWidget.addWidget(self.index)
         self.stackedWidget.setCurrentWidget(self.index)
     
@@ -43,10 +48,19 @@ class MainWindow(QMainWindow):
             self.travel.redirect_home.connect(self.show_index)
             self.travel.redirect_game.connect(self.show_game)
         self.stackedWidget.setCurrentWidget(self.travel)
-        print(self.stackedWidget.count(), "travel")
 
     def show_hidden(self):
-        pass
+        if hasattr(self, "hidden_game"):
+            self.stackedWidget.removeWidget(self.hidden_game)
+            self.hidden_game.close()
+            delattr(self, "hidden_game")
+            
+        if not hasattr(self, "hidden"):
+            self.hidden = HLevel()
+            self.stackedWidget.addWidget(self.hidden)
+            self.hidden.redirect_home.connect(self.show_index)
+            self.hidden.redirect_hidden_game.connect(self.show_hidden_game)
+        self.stackedWidget.setCurrentWidget(self.hidden)
 
     def show_game(self, lv):
         if not hasattr(self, "game"):
@@ -59,23 +73,23 @@ class MainWindow(QMainWindow):
         self.stackedWidget.addWidget(self.game)
         self.game.redirect_travel.connect(self.show_travel)
         self.stackedWidget.setCurrentWidget(self.game)
-        print(self.stackedWidget.count(), "game")
+
+    def show_hidden_game(self, lv):
+        if not hasattr(self, "hidden_game"):
+            self.hidden_game = HGame(lv)
+        else:
+            self.stackedWidget.removeWidget(self.hidden_game)
+            self.hidden_game.close()
+            delattr(self, "hidden_game")
+            self.hidden_game = HGame(lv)
+        self.stackedWidget.addWidget(self.hidden_game)
+        self.hidden_game.redirect_hidden.connect(self.show_hidden)
+        self.stackedWidget.setCurrentWidget(self.hidden_game)
     
 if __name__ == "__main__":
     app = QApplication([])
     # app.setWindowIcon(QIcon(os.path.join(basedir, "assets", "app_icon.ico")))
     app.setWindowIcon(QIcon("./assets/app_icon.ico"))
-    # controller = Controller()
-    # controller.show_index()
-    # index = Index()
-    # index.show()
-    # travel = Level()
-    # index.travel_button.clicked.connect(travel.show)
-    
     main_window = MainWindow()
     main_window.show()
-
     sys.exit(app.exec_())
-        
-
-    # app.exec_()

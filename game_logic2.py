@@ -121,7 +121,7 @@ class Env:
         change_triangles = []
         before_color = self.state[x][y]
         if before_color == color:
-            return [], 0, False
+            return self.state, 0, False
         deq = deque()
         deq.append((x, y))
         change_triangles.append((x, y))

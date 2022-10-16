@@ -212,7 +212,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     # app.setWindowIcon(QIcon(os.path.join(basedir, "assets", "app_icon.ico")))
     app.setWindowIcon(QIcon("./assets/app_icon.ico"))
-    window = Game()
+    window = Game(3)
     window.show()
 
     app.exec_()
