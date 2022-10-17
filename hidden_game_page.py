@@ -104,13 +104,18 @@ class HGame(QLabel):
 
     def selectColor(self, index):
         self.current_color_index = index
+        width = (SCREEN_WIDTH - 108) // self.colors
+        x, y = 108 + width * (index + 1) - 20,  580
+        if index == self.colors - 1:
+            x = SCREEN_WIDTH - 20
+        self.selected_color_button.setGeometry(x, y, 20, 20)
 
     def draw_handle_buttons(self):
-        width = 144 // 4
+        width = 36
         height = SCREEN_HEIGHT - 580
-        icons = ["./assets/back.png", "", "./assets/refresh.png", "./assets/tip.png"]
+        icons = ["./assets/back.png", "", "./assets/refresh.png"]
         funcs = [self.back, None, self.refresh, self.tip]
-        for i in range(4):
+        for i in range(3):
             x = i * width
             y = 580
             button = QPushButton("", self)
@@ -118,7 +123,7 @@ class HGame(QLabel):
             button.setIcon(QIcon(icons[i]))
             button.setIconSize(QSize(60, 60))
             button.setGeometry(x, y, width, height)
-            if i < 3:
+            if i < 2:
                 button.setStyleSheet("border: 0; background-color: #241b0d; border-right: 1px solid white; color: white; font-size: 22px;")
             if i == 1:
                 button.setText(str(self.current_step))
@@ -128,17 +133,24 @@ class HGame(QLabel):
     def draw_color_buttons(self):
         # 画颜色按钮，并添加监听器
         # canvas = self.pixmap()
-        width = (SCREEN_WIDTH - 144) // self.colors
+        width = (SCREEN_WIDTH - 108) // self.colors
         height = SCREEN_HEIGHT - 580
         for i in range(self.colors):
-            x = 144 + i * width
+            x = 108 + i * width
             y = 580
             button = QPushButton("", self)
             # print(str(self.color_rgbs[i]))
             # print("background-color: " + str(self.color_rgbs[i])+";")
             button.setStyleSheet("border: 0; background-color: rgb" + str(self.color_rgbs[i])+"; border-top: 1px dotted #241b0d;")
+            if i == self.colors - 1:
+                colors_width = SCREEN_WIDTH - 108
+                width = colors_width - (colors_width // self.colors) * i
             button.setGeometry(x, y, width, height)
             button.clicked.connect(functools.partial(self.selectColor, i))
+        self.selected_color_button = QPushButton("", self)
+        self.selected_color_button.setIcon(QIcon('./assets/selected.png'))
+        self.selected_color_button.setIconSize(QSize(30, 30))
+        self.selectColor(0)
 
     def back(self, reload_config):
         self.redirect_hidden.emit(reload_config)

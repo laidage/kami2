@@ -144,6 +144,12 @@ class Game(QLabel):
 
     def selectColor(self, index):
         self.current_color_index = index
+        width = (SCREEN_WIDTH - 144) // self.colors
+        x, y = 144 + width * (index + 1) - 20,  82 * 14 // 2
+        if index == self.colors - 1:
+            x = SCREEN_WIDTH - 20
+        self.selected_color_button.setGeometry(x, y, 20, 20)
+
 
     def draw_handle_buttons(self):
         width = 144 // 4
@@ -174,11 +180,13 @@ class Game(QLabel):
             x = 144 + i * width
             y = 82 * 14 // 2
             button = QPushButton("", self)
-            # print(str(self.color_rgbs[i]))
-            # print("background-color: " + str(self.color_rgbs[i])+";")
             button.setStyleSheet("border: 0; background-color: rgb" + str(self.color_rgbs[i])+"; border-top: 1px dotted #241b0d;")
             button.setGeometry(x, y, width, height)
             button.clicked.connect(functools.partial(self.selectColor, i))
+        self.selected_color_button = QPushButton("", self)
+        self.selected_color_button.setIcon(QIcon('./assets/selected.png'))
+        self.selected_color_button.setIconSize(QSize(30, 30))
+        self.selectColor(0)
 
     def back(self, reload_config):
         self.redirect_travel.emit(reload_config)
