@@ -22,13 +22,13 @@ class StartLabel(QLabel):
         super().__init__()
 
         self.setWindowTitle("kami2")
-        background = QPixmap().fromImage(QImage("./assets/background.png")).scaled(SCREEN_WIDTH,SCREEN_HEIGHT)
+        background = QPixmap().fromImage(QImage("./assets/welcome.png")).scaled(SCREEN_WIDTH,SCREEN_HEIGHT)
         # canvas.fill(Qt.green)
         self.setPixmap(background)
         self.setBaseSize(SCREEN_WIDTH,SCREEN_HEIGHT)
-        self.welcome_text = QPushButton("", self)
-        self.welcome_girl = QPushButton("", self)
-        self.styled_buttons()
+        # self.welcome_text = QPushButton("", self)
+        # self.welcome_girl = QPushButton("", self)
+        # self.styled_buttons()
 
     def styled_buttons(self):
         x1, y1, width1, height1 = 55, 50 + 20, 250, 100
