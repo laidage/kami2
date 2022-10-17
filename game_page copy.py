@@ -230,7 +230,6 @@ def tran_state(state, color_nums):
                     column[14] = -1
                 types.append(column)
             trans_state.append(types)
-        print(len(state))
         for i in range(20):
             for j in range(len(state[i])):
                 color = state[i][j]

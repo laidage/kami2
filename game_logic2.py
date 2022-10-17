@@ -159,7 +159,7 @@ class Env:
             reward = 0
         return self.state, reward, done
 
-    def step(self, action):
+    def tran_action(self, action):
         color = action // 290
         index = action - color * 290
         four_columns = index // (29 * 2)
@@ -180,5 +180,10 @@ class Env:
         rest_colors = self.rest_of_colors[:]
         rest_colors.remove(self.state[x][y])
         color = rest_colors[color % len(rest_colors)]
+        print(self.rest_of_colors)
+        return x, y, color
+
+    def step(self, action):
+        x, y, color = self.tran_action(action)
         return self.change_color(x, y, color)
         

@@ -7,7 +7,10 @@ from PySide6.QtCore import QSize, Qt, QPoint, QObject, Signal
 from PySide6.QtWidgets import QApplication, QPushButton, QLabel
 from PySide6.QtGui import QIcon, QPixmap, QPainter, QPolygon, QColor, QBrush, QPen
 from game_logic2 import Env
-import functools 
+import functools
+from utils import tran_state
+from net import Net
+import torch
 
 
 basedir = os.getcwd()
@@ -34,7 +37,7 @@ def bind(objectName, propertyName):
 class Game(QLabel):
     # current_step = bind("step_button", "text")
     redirect_travel = Signal(int)
-    def __init__(self, lv=1):
+    def __init__(self, lv):
         super().__init__()
         self.lv = lv
         self.setWindowTitle("kami2")
@@ -155,7 +158,7 @@ class Game(QLabel):
         width = 144 // 4
         height = SCREEN_HEIGHT - 82 * 14 // 2
         icons = ["./assets/back.png", "", "./assets/refresh.png", "./assets/tip.png"]
-        funcs = [self.back, None, self.refresh, self.tip]
+        funcs = [functools.partial(self.back, -1), None, self.refresh, self.tip]
         for i in range(4):
             x = i * width
             y = 82 * 14 // 2
@@ -200,8 +203,20 @@ class Game(QLabel):
         
 
     def tip(self):
-        print("tip")
-        pass
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        torch.set_default_dtype(torch.float16)
+        # , map_location='cpu'
+        self.net = Net().float().to(device)
+        if os.path.exists("model/half_net.pth"):
+            self.net.load_state_dict(torch.load("model/half_net.pth"))
+        if self.net:
+            state = tran_state(self.triangle_colors, self.colors)
+            state = torch.tensor(state, dtype=torch.half).unsqueeze(0)
+            state = state.float()
+            with torch.no_grad():
+                action =  self.net(state).max(1)[1].view(1, 1)
+                x, y, color = self.env.tran_action(action.item())
+                print(x, y, color)
 
     def clickTriangles(self):
         x, y, color = 0, 0, 0

@@ -12,10 +12,7 @@ torch.set_default_dtype(torch.float16)
 # , map_location='cpu'
 policy_net = Net().to(device)
 if os.path.exists("model/half_net.pth"):
-    before = time.time()
     policy_net.load_state_dict(torch.load("model/half_net.pth"))
-    after = time.time()
-    print(after -before)
 
 def choose_action(state, env):
     with torch.no_grad():

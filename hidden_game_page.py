@@ -114,7 +114,7 @@ class HGame(QLabel):
         width = 36
         height = SCREEN_HEIGHT - 580
         icons = ["./assets/back.png", "", "./assets/refresh.png"]
-        funcs = [self.back, None, self.refresh, self.tip]
+        funcs = [functools.partial(self.back, -1), None, self.refresh, self.tip]
         for i in range(3):
             x = i * width
             y = 580
@@ -139,8 +139,6 @@ class HGame(QLabel):
             x = 108 + i * width
             y = 580
             button = QPushButton("", self)
-            # print(str(self.color_rgbs[i]))
-            # print("background-color: " + str(self.color_rgbs[i])+";")
             button.setStyleSheet("border: 0; background-color: rgb" + str(self.color_rgbs[i])+"; border-top: 1px dotted #241b0d;")
             if i == self.colors - 1:
                 colors_width = SCREEN_WIDTH - 108

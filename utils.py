@@ -53,3 +53,22 @@ def get_rectangles():
 
 def which_rectangle(x, y):
     return y // 5, x // 5
+
+def tran_state(state, color_nums):
+        trans_state = []
+        for color_index in range(5):
+            if color_index >= color_nums:
+                trans_state.append([[-1 for _ in range(15)] for _ in range(20)])
+                continue
+            types = []
+            for column_index in range(20):
+                column = [0 for _ in range(15)]
+                if column_index % 4 == 1 or column_index % 4 == 2: 
+                    column[14] = -1
+                types.append(column)
+            trans_state.append(types)
+        for i in range(20):
+            for j in range(len(state[i])):
+                color = state[i][j]
+                trans_state[color][i][j] = 1
+        return trans_state
