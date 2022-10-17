@@ -1,10 +1,11 @@
+import json
 import random
 import sys, os
 from utils import get_rectangles, which_rectangle
 
-from PySide6.QtCore import QSize, Qt, QPoint, QObject, Signal
-from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QFrame
-from PySide6.QtGui import QIcon, QPixmap, QPainter, QPolygon, QColor, QBrush, QPen, QPalette
+from PySide6.QtCore import QSize, Qt, Signal
+from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel
+from PySide6.QtGui import QIcon, QPixmap, QPainter, QColor, QBrush, QPen
 from hidden_game_logic import Env
 import functools 
 
@@ -44,6 +45,8 @@ class HGame(QLabel):
         self.draw_handle_buttons()
         self.draw_color_buttons()
         self.mousePressEvent = self.pressEvent
+        with open('kami_state.json', 'r') as f:
+            self.global_state = json.load(f)
 
         # Set the central widget of the Window.
     def pressEvent(self, QMouseEvent):
@@ -59,7 +62,20 @@ class HGame(QLabel):
         self.step_button.setText(str(self.current_step))
         self.draw_rectangles()
         if done:
-            self.back()
+            reload_config = -1
+            if self.current_step >= 0:
+                if self.global_state["hidden_level"][self.lv - 1] < 2:
+                    self.global_state["hidden_level"][self.lv - 1] = 2
+                    with open('kami_state.json', 'w') as f:
+                        json.dump(self.global_state, f)
+                    reload_config = self.lv
+            else:
+                if self.global_state["hidden_level"][self.lv - 1] == 0:
+                    self.global_state["hidden_level"][self.lv - 1] = 1
+                    with open('kami_state.json', 'w') as f:
+                        json.dump(self.global_state, f)
+                    reload_config = self.lv
+            self.back(reload_config)
         
     def draw_rectangles(self):
         canvas = self.pixmap()
@@ -124,8 +140,8 @@ class HGame(QLabel):
             button.setGeometry(x, y, width, height)
             button.clicked.connect(functools.partial(self.selectColor, i))
 
-    def back(self):
-        self.redirect_hidden.emit(1)
+    def back(self, reload_config):
+        self.redirect_hidden.emit(reload_config)
 
     def refresh(self):
         self.rectangle_colors, self.min_steps, self.colors, self.color_rgbs = self.env.init_game(self.lv)
@@ -137,9 +153,6 @@ class HGame(QLabel):
 
     def tip(self):
         print("tip")
-        pass
-
-    def clickRectangle(self):
         pass
 
 if __name__ == "__main__":

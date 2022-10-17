@@ -5,7 +5,6 @@
 # 720 * 1160
 
 from PIL import Image
-import os
 from closed_color import min_color_diff
 from collections import Counter
 

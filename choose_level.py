@@ -1,3 +1,4 @@
+import json
 import sys
 from PySide6.QtCore import QSize, Qt, QPoint, QObject, Signal
 from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel
@@ -27,7 +28,8 @@ class Level(QLabel):
         # canvas.fill(Qt.green)
         self.setPixmap(background)
         self.setBaseSize(SCREEN_WIDTH,SCREEN_HEIGHT)
-
+        with open('kami_state.json', 'r') as f:
+            self.global_state = json.load(f)
         self.home_button = QPushButton("", self)
         self.left_button = QPushButton("", self)
         self.right_button = QPushButton("", self)
@@ -81,6 +83,20 @@ class Level(QLabel):
             self.current_level_nums[i].setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
             self.current_level_nums[i].setStyleSheet("font-size: 18px; color: #475c53;")
 
+    def reload_config(self, lv):
+        with open('kami_state.json', 'r') as f:
+            self.global_state = json.load(f)
+        i = (lv - 1) % 6
+        if self.global_state['travel_level'][lv - 1] == 2:
+            self.current_levels[i].setIcon(QIcon("./assets/perfect.png"))
+            self.current_level_nums[i].setText("")
+        elif self.global_state['travel_level'][lv - 1] == 1:
+            self.current_levels[i].setIcon(QIcon("./assets/ok.png"))
+            self.current_level_nums[i].setText("")
+        else:
+            self.current_levels[i].setIcon(QIcon("./assets/level.png"))
+            self.current_level_nums[i].setText(str(lv))
+
     def bind_level(self):
         self.current_page_button.setText(str(self.current_page))
         for i in range(6):
@@ -91,8 +107,15 @@ class Level(QLabel):
             #     self.current_level[i].setIcon(QIcon("./assets/perfect.png"))
             # else:
             #     self.current_level[i].setIcon(QIcon("./assets/ok.png"))
-            self.current_levels[i].setIcon(QIcon("./assets/level.png"))
-            self.current_level_nums[i].setText(str(lv))
+            if self.global_state['travel_level'][lv - 1] == 2:
+                self.current_levels[i].setIcon(QIcon("./assets/perfect.png"))
+                self.current_level_nums[i].setText("")
+            elif self.global_state['travel_level'][lv - 1] == 1:
+                self.current_levels[i].setIcon(QIcon("./assets/ok.png"))
+                self.current_level_nums[i].setText("")
+            else:
+                self.current_levels[i].setIcon(QIcon("./assets/level.png"))
+                self.current_level_nums[i].setText(str(lv))
             self.current_level_imgs[i].clicked.connect(functools.partial(self.open_game, lv))
             self.current_levels[i].clicked.connect(functools.partial(self.open_game, lv))
 

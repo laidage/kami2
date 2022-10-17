@@ -1,7 +1,7 @@
 import sys
-from PySide6.QtCore import QSize, Qt, QPoint, QObject, Signal
-from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel
-from PySide6.QtGui import QIcon, QPixmap, QPainter, QPolygon, QColor, QBrush, QPen, QImage
+from PySide6.QtCore import QSize, Signal
+from PySide6.QtWidgets import QApplication, QPushButton, QLabel
+from PySide6.QtGui import QIcon, QPixmap, QImage
 
 from choose_level import Level
 
@@ -52,10 +52,10 @@ class Index(QLabel):
         self.hidden_button.setStyleSheet("background-color: rgba(0, 0, 0, 0%);")
 
     def open_travel(self):
-        self.redirect_travel.emit(1)
+        self.redirect_travel.emit(-1)
 
     def open_hidden(self):
-        self.redirect_hidden.emit(1)
+        self.redirect_hidden.emit(-1)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

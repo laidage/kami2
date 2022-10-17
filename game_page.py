@@ -1,10 +1,11 @@
+import json
 import random
 import sys, os
 from utils import get_triangles, whichTriangle
 
 from PySide6.QtCore import QSize, Qt, QPoint, QObject, Signal
-from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QFrame
-from PySide6.QtGui import QIcon, QPixmap, QPainter, QPolygon, QColor, QBrush, QPen, QPalette
+from PySide6.QtWidgets import QApplication, QPushButton, QLabel
+from PySide6.QtGui import QIcon, QPixmap, QPainter, QPolygon, QColor, QBrush, QPen
 from game_logic2 import Env
 import functools 
 
@@ -53,6 +54,8 @@ class Game(QLabel):
         self.draw_handle_buttons()
         self.draw_color_buttons()
         self.mousePressEvent = self.pressEvent
+        with open('kami_state.json', 'r') as f:
+            self.global_state = json.load(f)
         # self.setMenuWidget(button2)
 
         # Set the central widget of the Window.
@@ -69,7 +72,20 @@ class Game(QLabel):
         self.step_button.setText(str(self.current_step))
         self.draw_triangles(self.triangles)
         if done:
-            self.back()
+            reload_config = -1
+            if self.current_step >= 0:
+                if self.global_state["travel_level"][self.lv - 1] < 2:
+                    self.global_state["travel_level"][self.lv - 1] = 2
+                    with open('kami_state.json', 'w') as f:
+                        json.dump(self.global_state, f)
+                    reload_config = self.lv
+            else:
+                if self.global_state["travel_level"][self.lv - 1] == 0:
+                    self.global_state["travel_level"][self.lv - 1] = 1
+                    with open('kami_state.json', 'w') as f:
+                        json.dump(self.global_state, f)
+                    reload_config = self.lv
+            self.back(reload_config)
         
         
     def draw_one_color(self, triangles_index, color):
@@ -164,8 +180,8 @@ class Game(QLabel):
             button.setGeometry(x, y, width, height)
             button.clicked.connect(functools.partial(self.selectColor, i))
 
-    def back(self):
-        self.redirect_travel.emit(1)
+    def back(self, reload_config):
+        self.redirect_travel.emit(reload_config)
 
     def refresh(self):
         self.triangle_colors, self.min_steps, self.colors, self.color_rgbs = self.env.init_game(self.lv)

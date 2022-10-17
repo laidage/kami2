@@ -36,11 +36,13 @@ class MainWindow(QMainWindow):
         self.stackedWidget.addWidget(self.index)
         self.stackedWidget.setCurrentWidget(self.index)
     
-    def show_travel(self):
+    def show_travel(self, reload_config=-1):
         if hasattr(self, "game"):
             self.stackedWidget.removeWidget(self.game)
             self.game.close()
             delattr(self, "game")
+            if reload_config != -1:
+                self.travel.reload_config(reload_config)
             
         if not hasattr(self, "travel"):
             self.travel = Level()
@@ -49,11 +51,13 @@ class MainWindow(QMainWindow):
             self.travel.redirect_game.connect(self.show_game)
         self.stackedWidget.setCurrentWidget(self.travel)
 
-    def show_hidden(self):
+    def show_hidden(self, reload_config=-1):
         if hasattr(self, "hidden_game"):
             self.stackedWidget.removeWidget(self.hidden_game)
             self.hidden_game.close()
             delattr(self, "hidden_game")
+            if reload_config != -1:
+                self.hidden.reload_config(reload_config)
             
         if not hasattr(self, "hidden"):
             self.hidden = HLevel()

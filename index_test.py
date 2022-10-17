@@ -3,7 +3,6 @@ from PySide6.QtCore import QSize, Qt, QPoint, QObject, Signal
 from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QStackedWidget
 from PySide6.QtGui import QIcon, QPixmap, QPainter, QPolygon, QColor, QBrush, QPen
 
-from choose_level import Level
 
 SCREEN_WIDTH = 360
 SCREEN_HEIGHT = 640

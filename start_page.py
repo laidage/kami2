@@ -1,6 +1,6 @@
 import sys
-from PySide6.QtCore import QSize, Qt, QPoint, QObject, Signal
-from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel
+from PySide6.QtCore import QSize
+from PySide6.QtWidgets import QApplication, QPushButton, QLabel
 from PySide6.QtGui import QIcon, QPixmap, QImage
 
 from choose_level import Level
