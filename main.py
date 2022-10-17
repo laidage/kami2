@@ -1,3 +1,4 @@
+from start_page import StartLabel
 from hidden_level import HLevel
 from hidden_game_page import HGame
 import sys
@@ -8,6 +9,7 @@ from game_page import Game
 from choose_level import Level
 from index import Index
 from rewrite_splash import Splash
+import time
 
 SCREEN_WIDTH = 360
 SCREEN_HEIGHT = 640
@@ -19,8 +21,13 @@ class MainWindow(QMainWindow):
         self.setFixedSize(SCREEN_WIDTH, SCREEN_HEIGHT)
         self.setWindowTitle("kami2")
         
+        
         self.stackedWidget = QStackedWidget()
         self.setCentralWidget(self.stackedWidget)
+        self.start_page = StartLabel()
+        self.stackedWidget.addWidget(self.start_page)
+        self.stackedWidget.setCurrentWidget(self.start_page)
+        time.sleep(3)
         self.index = Index()
         self.index.redirect_travel.connect(self.show_travel)
         self.index.redirect_hidden.connect(self.show_hidden)
@@ -95,10 +102,10 @@ class MainWindow(QMainWindow):
 if __name__ == "__main__":
     app = QApplication([])
     app.setWindowIcon(QIcon("./assets/app_icon.ico"))
-    splash = Splash()
-    app.processEvents()  # 处理主进程事件
+    # splash = Splash()
+    # app.processEvents()  # 处理主进程事件
     main_window = MainWindow()
     main_window.show()
-    splash.finish(main_window)
-    splash.deleteLater()
+    # splash.finish(main_window)
+    # splash.deleteLater()
     sys.exit(app.exec_())
