@@ -180,7 +180,6 @@ class Env:
         rest_colors = self.rest_of_colors[:]
         rest_colors.remove(self.state[x][y])
         color = rest_colors[color % len(rest_colors)]
-        print(self.rest_of_colors)
         return x, y, color
 
     def step(self, action):

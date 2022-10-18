@@ -1,16 +1,28 @@
+from start_page import StartLabel
 from hidden_level import HLevel
 from hidden_game_page import HGame
 import sys
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QApplication, QMainWindow, QStackedWidget, QSplashScreen
-from PySide6.QtGui import QIcon
+from PySide6.QtCore import Qt, QPropertyAnimation, QRect, QThread, Signal
+from PySide6.QtWidgets import QApplication, QMainWindow, QStackedWidget, QSplashScreen, QLabel
+from PySide6.QtGui import QIcon, QPixmap
 from game_page import Game
 from choose_level import Level
 from index import Index
 from rewrite_splash import Splash
+import time
 
 SCREEN_WIDTH = 360
 SCREEN_HEIGHT = 640
+
+class Thread(QThread):
+    redirect_home = Signal(int)
+    def __int__(self):
+        # 初始化函数
+        super(Thread, self).__init__()
+
+    def run(self):
+        self.sleep(3)
+        self.redirect_home.emit(1)
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -18,14 +30,29 @@ class MainWindow(QMainWindow):
         self.setWindowFlags(Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
         self.setFixedSize(SCREEN_WIDTH, SCREEN_HEIGHT)
         self.setWindowTitle("kami2")
+        
         self.stackedWidget = QStackedWidget()
         self.setCentralWidget(self.stackedWidget)
         self.index = Index()
         self.index.redirect_travel.connect(self.show_travel)
         self.index.redirect_hidden.connect(self.show_hidden)
-        self.show_index()
+        
+        self.start_page = StartLabel()
+        
+        self.stackedWidget.addWidget(self.start_page)
+        self.stackedWidget.setCurrentWidget(self.start_page)
+        self._thread = Thread()
+        self._thread.redirect_home.connect(self.show_index)
+        self._thread.start()
+        # self.start_page.wait()
+        
+        # self.show_index()
 
     def show_index(self):
+        if hasattr(self, "start_page"):
+            self.stackedWidget.removeWidget(self.start_page)
+            self.start_page.close()
+            delattr(self, "start_page")
         if hasattr(self, "travel"):
             self.stackedWidget.removeWidget(self.travel)
             self.travel.close()
@@ -94,10 +121,6 @@ class MainWindow(QMainWindow):
 if __name__ == "__main__":
     app = QApplication([])
     app.setWindowIcon(QIcon("./assets/app_icon.ico"))
-    splash = Splash()
-    app.processEvents()  # 处理主进程事件
     main_window = MainWindow()
     main_window.show()
-    splash.finish(main_window)
-    splash.deleteLater()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

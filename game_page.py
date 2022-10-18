@@ -1,9 +1,9 @@
 import json
 import random
 import sys, os
-from utils import get_triangles, whichTriangle
+from utils import get_center_pos, get_triangles, whichTriangle
 
-from PySide6.QtCore import QSize, Qt, QPoint, QObject, Signal
+from PySide6.QtCore import QSize, Qt, QPoint, QObject, Signal, QThread
 from PySide6.QtWidgets import QApplication, QPushButton, QLabel
 from PySide6.QtGui import QIcon, QPixmap, QPainter, QPolygon, QColor, QBrush, QPen
 from game_logic2 import Env
@@ -11,6 +11,7 @@ import functools
 from utils import tran_state
 from net import Net
 import torch
+import time
 
 
 basedir = os.getcwd()
@@ -25,14 +26,11 @@ colors = [Qt.red, Qt.blue, Qt.green]
 SCREEN_WIDTH = 360
 SCREEN_HEIGHT = 640
 
-def bind(objectName, propertyName):
-    def getter(self):
-        return self.findChild(QObject, objectName).property(propertyName)
-
-    def setter(self, value):
-        self.findChild(QObject, objectName).setProperty(propertyName, value)
-
-    return property(getter, setter)
+class Thread(QThread):
+    load_model_complete = Signal(int)
+    def __int__(self):
+        # 初始化函数
+        super(Thread, self).__init__()
 
 class Game(QLabel):
     # current_step = bind("step_button", "text")
@@ -56,15 +54,32 @@ class Game(QLabel):
         self.draw_triangles(self.triangles)
         self.draw_handle_buttons()
         self.draw_color_buttons()
+        self.tip_circle1 = QPushButton("", self)
+        self.tip_circle1.setAttribute(Qt.WA_TransparentForMouseEvents)
+        self.tip_circle1.hide()
+        self.tip_circle2 = QPushButton("", self)
+        self.tip_circle2.setAttribute(Qt.WA_TransparentForMouseEvents)
+        self.tip_circle2.hide()
+        self.tip_line1 = QPushButton("", self) # 横线
+        self.tip_line1.setAttribute(Qt.WA_TransparentForMouseEvents)
+        self.tip_line1.hide()
+        self.tip_line2 = QPushButton("", self)  # 竖线
+        self.tip_line2.setAttribute(Qt.WA_TransparentForMouseEvents)
+        self.tip_line2.hide()
         self.mousePressEvent = self.pressEvent
         with open('kami_state.json', 'r') as f:
             self.global_state = json.load(f)
         # self.setMenuWidget(button2)
+        self.tip_thread = Thread()
+        self.tip_thread.run = self.load_model
+        self.tip_thread.load_model_complete.connect(self.predirect)
+        
 
         # Set the central widget of the Window.
     def pressEvent(self, QMouseEvent):
         if QMouseEvent.buttons() != Qt.LeftButton:   ##判断是否鼠标左键点击
             return
+        self.hidden_tip()
         pos = QMouseEvent.pos()
         x, y = whichTriangle(pos.x(), pos.y(), self.triangles)
         color_index = self.current_color_index
@@ -159,20 +174,20 @@ class Game(QLabel):
         height = SCREEN_HEIGHT - 82 * 14 // 2
         icons = ["./assets/back.png", "", "./assets/refresh.png", "./assets/tip.png"]
         funcs = [functools.partial(self.back, -1), None, self.refresh, self.tip]
+        self.handle_buttons = [QPushButton("", self) for _ in range(4)]
         for i in range(4):
             x = i * width
             y = 82 * 14 // 2
-            button = QPushButton("", self)
-            button.setStyleSheet("border: 0; background-color: #241b0d;")
-            button.setIcon(QIcon(icons[i]))
-            button.setIconSize(QSize(60, 60))
-            button.setGeometry(x, y, width, height)
+            self.handle_buttons[i].setStyleSheet("border: 0; background-color: #241b0d; color: white;")
+            self.handle_buttons[i].setIcon(QIcon(icons[i]))
+            self.handle_buttons[i].setIconSize(QSize(60, 60))
+            self.handle_buttons[i].setGeometry(x, y, width, height)
             if i < 3:
-                button.setStyleSheet("border: 0; background-color: #241b0d; border-right: 1px solid white; color: white; font-size: 22px;")
+                self.handle_buttons[i].setStyleSheet("border: 0; background-color: #241b0d; border-right: 1px solid white; color: white; font-size: 22px;")
             if i == 1:
-                button.setText(str(self.current_step))
-                self.step_button = button
-            button.clicked.connect(funcs[i])
+                self.handle_buttons[i].setText(str(self.current_step))
+                self.step_button = self.handle_buttons[i]
+            self.handle_buttons[i].clicked.connect(funcs[i])
     
     def draw_color_buttons(self):
         # 画颜色按钮，并添加监听器
@@ -195,28 +210,73 @@ class Game(QLabel):
         self.redirect_travel.emit(reload_config)
 
     def refresh(self):
+        self.hidden_tip()
         self.triangle_colors, self.min_steps, self.colors, self.color_rgbs = self.env.init_game(self.lv)
         self.current_step = self.min_steps
         self.current_color_index = 0
         self.step_button.setText(str(self.current_step))
         self.draw_triangles(self.triangles)
+
+    def predirect(self):
+        state = tran_state(self.triangle_colors, self.colors)
+        state = torch.tensor(state, dtype=torch.half).unsqueeze(0)
+        state = state.float()
+        with torch.no_grad():
+            action =  self.net(state).max(1)[1].view(1, 1)
+            x, y, color = self.env.tran_action(action.item())
+            self.handle_buttons[3].setIcon(QIcon("./assets/tip.png"))
+            self.handle_buttons[3].setText("")
+            self.show_tip(x, y, color)
+
+    def load_model(self):
+        if not hasattr(self, 'net'):
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            torch.set_default_dtype(torch.float16)
+            self.net = Net().float().to(device)
+            if os.path.exists("model/half_net.pth"):
+                self.net.load_state_dict(torch.load("model/half_net.pth"))
+        self.tip_thread.load_model_complete.emit(1)
+            
+    def show_tip(self, x, y, color):
+        # x是列数， y是行数
+        width = (SCREEN_WIDTH - 144) // self.colors
+        x1, y1 = 144 + width // 2 + width * color - 20, 587
+        self.tip_circle1.setGeometry(x1, y1, 40, 40)
+        self.tip_circle1.setStyleSheet("border-radius: 20; background: none; border: 3 solid white;")
+        self.tip_circle1.setHidden(False)
+        # self.tip_circle2, self.tip_line1, self.line2
+        x2, y2 = get_center_pos(x, y)
+        x2, y2 = x2 - 5, y2 - 5
+        self.tip_circle2.setGeometry(x2, y2, 10, 10)
+        self.tip_circle2.setStyleSheet("border-radius: 5; background: white;")
+        self.tip_circle2.setHidden(False)
+
+        self.tip_line2.setGeometry(x1 + 20, y2 + 5, 3, y1 - y2 - 5 )
+        self.tip_line2.setStyleSheet("background: white;")
+        self.tip_line2.setHidden(False)
+        if x2 + 5 >= x1 + 20:
+            line_x = x1 + 20
+            line_width = x2 - line_x
+        else:
+            line_x = x2 + 10
+            line_width = x1 + 20 - line_x
+        self.tip_line1.setGeometry(line_x, y2 + 5, line_width, 3)
+        self.tip_line1.setStyleSheet("background: white;")
+        self.tip_line1.setHidden(False)
+
+
+    def hidden_tip(self):
+        self.tip_circle1.hide()
+        self.tip_circle2.hide()
+        self.tip_line1.hide()
+        self.tip_line2.hide()
         
 
     def tip(self):
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        torch.set_default_dtype(torch.float16)
-        # , map_location='cpu'
-        self.net = Net().float().to(device)
-        if os.path.exists("model/half_net.pth"):
-            self.net.load_state_dict(torch.load("model/half_net.pth"))
-        if self.net:
-            state = tran_state(self.triangle_colors, self.colors)
-            state = torch.tensor(state, dtype=torch.half).unsqueeze(0)
-            state = state.float()
-            with torch.no_grad():
-                action =  self.net(state).max(1)[1].view(1, 1)
-                x, y, color = self.env.tran_action(action.item())
-                print(x, y, color)
+        self.handle_buttons[3].setIcon(QIcon())
+        self.handle_buttons[3].setText("load")
+        self.tip_thread.start()
+        
 
     def clickTriangles(self):
         x, y, color = 0, 0, 0

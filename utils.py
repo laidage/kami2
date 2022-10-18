@@ -72,3 +72,22 @@ def tran_state(state, color_nums):
                 color = state[i][j]
                 trans_state[color][i][j] = 1
         return trans_state
+
+def get_center_pos(x, y):
+    # x 列数， y行数
+    if x % 4 == 1 or x % 4 == 2:
+        pos_x, pos_y = 36 + 72 * (x // 2),  41 + (1160 * y) // 14
+    else:
+        if y == 0:
+            if x % 4 == 0:
+                pos_x, pos_y = 18 + 144 * (x // 4), 21
+            else:
+                pos_x, pos_y = 144 - 18 + 144 * (x//4), 21
+        elif y == 14:
+            if x % 4 == 0:
+                pos_x, pos_y = 18 + 144 * (x // 4), 1160 - 21
+            else:
+                pos_x, pos_y = 144 - 18 + 144 * (x//4), 1160 - 21
+        else:
+            pos_x, pos_y = 36 + 72 * (x//2),  (1160 * y) // 14
+    return pos_x // 2, pos_y // 2
